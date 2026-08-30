@@ -1,0 +1,22 @@
+{
+  "name": "assidia",
+  "version": "2.0.0",
+  "description": "Assidia — application de gestion de pointage des étudiants",
+  "main": "server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env.local server.js",
+    "migrate:data": "node --env-file-if-exists=.env.local scripts/migrate-data.js",
+    "check:sql": "node --env-file-if-exists=.env.local scripts/check-sql.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-session": "^2.1.0",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2",
+    "multer": "^2.0.1",
+    "pg": "^8.13.1"
+  }
+}

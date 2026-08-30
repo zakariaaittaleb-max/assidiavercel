@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assid'IA — Connexion</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<main style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div class="card card-pad" style="width:100%; max-width:380px;">
+    <div class="brand" style="justify-content:center; margin-bottom:22px;">
+      <img src="logo.png" alt="Assid'IA" style="height:52px; width:auto;">
+    </div>
+    <div class="section-title" style="text-align:center; margin-bottom:18px;">🔒 Connexion</div>
+    <form id="login-form">
+      <div class="field" style="margin-bottom:14px;">
+        <label>Identifiant</label>
+        <input id="login-username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Mot de passe</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <p id="login-error" class="hint" style="color:var(--danger); min-height:18px; margin:6px 0 14px;"></p>
+      <button class="btn btn-primary" type="submit" style="width:100%;" id="login-submit">Se connecter</button>
+    </form>
+  </div>
+</main>
+
+<script src="js/login.js"></script>
+</body>
+</html>

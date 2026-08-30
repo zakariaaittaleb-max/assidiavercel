@@ -1,0 +1,7 @@
+node_modules/
+.env
+.env.local
+.vercel/
+
+# Ancienne base SQLite locale, conservée hors dépôt (contient des données personnelles d'étudiants).
+data/

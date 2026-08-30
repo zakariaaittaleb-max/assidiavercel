@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assid'IA — Session</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="logo.png" alt="Assid'IA" style="height:34px; width:auto;">
+  </div>
+  <nav class="nav-links">
+    <a href="dashboard.html">Tableau de bord</a>
+    <a href="index.html">Pointage</a>
+    <a href="database.html">Base de données</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="live-dot"></span>
+    <span id="clock" class="mono"></span>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">📝 Pointage</h1>
+      <p class="page-subtitle">Renseignez le cours du jour, puis enregistrez présences et expulsions en un clic</p>
+    </div>
+  </div>
+
+  <div class="card card-pad" style="margin-bottom:20px;">
+    <div class="section-title">🗓️ Session de pointage</div>
+    <div class="field-row" style="align-items:flex-end;">
+      <div class="field">
+        <label>École</label>
+        <input id="s-ecole" list="dl-ecoles" placeholder="Ecole...">
+        <datalist id="dl-ecoles"></datalist>
+      </div>
+      <div class="field">
+        <label>Cours</label>
+        <input id="s-cours" list="dl-cours" placeholder="Cours..." required>
+        <datalist id="dl-cours"></datalist>
+      </div>
+      <div class="field">
+        <label>Niveau</label>
+        <input id="s-niveau" list="dl-niveaux" placeholder="Niveau...">
+        <datalist id="dl-niveaux"></datalist>
+      </div>
+      <div class="field">
+        <label>Classe</label>
+        <input id="s-classe" list="dl-classes" placeholder="Classe...">
+        <datalist id="dl-classes"></datalist>
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input id="s-date" type="date">
+      </div>
+      <div class="field">
+        <label>Heure de début</label>
+        <input id="s-heure-debut" type="time">
+      </div>
+      <div class="field">
+        <label>Heure de fin</label>
+        <input id="s-heure-fin" type="time">
+      </div>
+      <button class="btn btn-primary" id="btn-open-session">⚡ Ouvrir le pointage</button>
+      <button class="btn btn-ghost" id="btn-reset-session">Réinitialiser</button>
+    </div>
+  </div>
+
+  <div id="seance-panel" style="display:none;">
+    <div class="card card-pad" style="margin-bottom:20px;">
+      <div class="hstack" style="flex-wrap:wrap; gap:18px;">
+        <div>
+          <div class="section-title" style="margin-bottom:4px;">Cours en session</div>
+          <div style="font-size:18px; font-weight:700;" id="info-cours">—</div>
+          <div class="page-subtitle" id="info-meta">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div class="hstack" style="flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-load-roster">👥 Charger les étudiants du niveau</button>
+        <div class="spacer"></div>
+        <div class="field" style="min-width:260px;">
+          <label>Ajouter un étudiant manuellement</label>
+          <input type="search" id="add-student-search" placeholder="Rechercher un nom...">
+          <div id="add-student-results" style="position:relative;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bulk-bar" id="draft-bar-roster" style="display:none; background:var(--warning-soft); border-color:var(--warning);">
+      <span class="bulk-count" id="draft-count-roster">0 étudiant(s) chargé(s), en attente de validation</span>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="btn-annuler-chargement">Annuler</button>
+      <button class="btn btn-primary btn-sm" id="btn-valider-chargement">✓ Valider le chargement</button>
+    </div>
+
+    <div class="bulk-bar" id="bulk-bar-roster" style="display:none;">
+      <span class="bulk-count" id="bulk-count-roster">0 sélectionné(s)</span>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="bulk-clear-roster">Désélectionner</button>
+      <button class="btn btn-ghost btn-sm" id="bulk-edit-roster">✎ Modifier ensemble</button>
+      <button class="btn btn-success btn-sm" id="bulk-present-roster">✅ Marquer présents</button>
+      <button class="btn btn-danger btn-sm" id="bulk-expel-roster">🚫 Expulser</button>
+      <button class="btn btn-ghost btn-sm" id="bulk-remove-roster">Retirer de la session</button>
+    </div>
+
+    <div class="card">
+      <div class="card-pad" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <div class="section-title" style="margin:0;">📋 Liste de pointage</div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary btn-sm" id="btn-valider-modifs" disabled>✓ Valider les modifications</button>
+        <button class="btn btn-ghost btn-sm" id="btn-annuler-modifs" disabled>Annuler les modifications</button>
+        <span class="badge badge-danger" id="count-absent">0 absents</span>
+        <span class="badge badge-muted" id="count-total">Total : 0</span>
+        <span class="badge badge-ok" id="count-arrived">0 présents</span>
+        <span class="badge badge-danger" id="count-expelled">0 expulsés</span>
+        <button class="btn btn-ghost btn-sm" id="btn-columns-roster">Colonnes</button>
+      </div>
+      <div class="table-container card-pad" style="padding-top:0;">
+        <table>
+          <thead>
+            <tr id="roster-thead-row">
+              <th style="width:36px;"><input type="checkbox" id="select-all-roster"></th>
+              <!-- colonnes réorganisables par glisser-déposer, générées par renderRosterHeader() -->
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="body-roster"></tbody>
+        </table>
+        <div id="empty-roster" class="empty-state" style="display:none;">
+          <div class="big">🧑‍🎓</div>Aucun étudiant dans cette session. Chargez le niveau ou ajoutez-en un manuellement.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="no-seance-state" class="empty-state">
+    <div class="big">🗓️</div>Renseignez le cours et ouvrez une session pour commencer le pointage.
+  </div>
+</main>
+
+<!-- Modal expulsion -->
+<div class="modal-overlay" id="modal-expulsion" style="display:none;">
+  <div class="modal">
+    <h3>🚫 Expulser l'étudiant</h3>
+    <p class="hint" id="modal-student-name">—</p>
+    <label>Raison de l'expulsion</label>
+    <textarea id="modal-reason" rows="4" style="width:100%; resize:vertical;" placeholder="Précisez la raison..."></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Annuler</button>
+      <button class="btn btn-danger" id="modal-confirm">Confirmer l'expulsion</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal édition en masse -->
+<div class="modal-overlay" id="modal-bulk-edit" style="display:none;">
+  <div class="modal">
+    <h3>Modifier la sélection</h3>
+    <p class="hint" id="bulk-edit-count">—</p>
+    <label>Champ à modifier</label>
+    <select id="bulk-edit-field"></select>
+    <label style="margin-top:12px;">Nouvelle valeur</label>
+    <input id="bulk-edit-value" placeholder="Nouvelle valeur...">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="bulk-edit-cancel">Annuler</button>
+      <button class="btn btn-primary" id="bulk-edit-confirm">Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal gestion des colonnes -->
+<div class="modal-overlay" id="modal-columns" style="display:none;">
+  <div class="modal">
+    <h3>Colonnes</h3>
+    <p class="hint">Choisissez les variables affichées, ou ajoutez-en de nouvelles.</p>
+    <div id="columns-list" class="columns-list"></div>
+    <div class="add-field-row">
+      <input id="add-field-label" placeholder="Nom du nouveau champ...">
+      <select id="add-field-format" title="Format de la colonne">
+        <option value="text">Texte</option>
+        <option value="heure">Heure</option>
+        <option value="nombre">Nombre</option>
+        <option value="date">Date</option>
+      </select>
+      <button class="btn btn-primary btn-sm" id="add-field-confirm">Ajouter</button>
+    </div>
+    <div class="link-field-row" id="link-field-row">
+      <label style="margin:0;"><input type="checkbox" id="link-field-toggle"> Lier ce champ à une autre table</label>
+      <div class="link-field-selects" id="link-field-selects" style="display:none;">
+        <select id="link-field-table"></select>
+        <select id="link-field-field"></select>
+      </div>
+      <div class="link-field-selects" id="link-field-key-selects" style="display:none; margin-top:6px;">
+        <select id="link-field-local-key" title="Clé locale (colonne de cette table)"></select>
+        <span class="hint" style="margin:0 6px; align-self:center;">=</span>
+        <select id="link-field-target-key" title="Clé cible (colonne de la table liée)"></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="columns-done">Terminé</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-stack"></div>
+
+<script src="js/api.js"></script>
+<script src="js/columns.js"></script>
+<script src="js/pointage.js"></script>
+</body>
+</html>

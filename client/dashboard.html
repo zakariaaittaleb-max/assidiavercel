@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assid'IA — Tableau de bord</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="logo.png" alt="Assid'IA" style="height:34px; width:auto;">
+  </div>
+  <nav class="nav-links">
+    <a href="dashboard.html">Tableau de bord</a>
+    <a href="index.html">Pointage</a>
+    <a href="database.html">Base de données</a>
+  </nav>
+  <div class="topbar-right">
+    <span class="live-dot"></span>
+    <span id="clock" class="mono"></span>
+  </div>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">📊 Tableau de bord</h1>
+      <p class="page-subtitle" id="period-label">Analyse de l'assiduité</p>
+    </div>
+    <div class="hstack">
+      <a href="index.html" class="btn btn-primary">Ouvrir le pointage</a>
+    </div>
+  </div>
+
+  <!-- ============================ Filtres ============================ -->
+  <div class="card card-pad" style="margin-bottom:16px;">
+    <div class="section-title">🔎 Filtres</div>
+    <p class="section-note">Tous les indicateurs et graphiques de cette page portent sur la sélection ci-dessous.</p>
+    <div class="filter-bar">
+      <div class="field">
+        <label>Du</label>
+        <input type="date" id="f-start">
+      </div>
+      <div class="field">
+        <label>Au</label>
+        <input type="date" id="f-end">
+      </div>
+      <div class="field">
+        <label>École</label>
+        <select id="f-ecole"></select>
+      </div>
+      <div class="field">
+        <label>Niveau</label>
+        <select id="f-niveau"></select>
+      </div>
+      <div class="field">
+        <label>Classe</label>
+        <select id="f-classe"></select>
+      </div>
+      <div class="field">
+        <label>Cours</label>
+        <select id="f-cours"></select>
+      </div>
+      <div class="field">
+        <label>Retard au-delà de</label>
+        <select id="f-tolerance">
+          <option value="0">0 min (strict)</option>
+          <option value="5">5 min</option>
+          <option value="10" selected>10 min</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+        </select>
+      </div>
+    </div>
+    <div class="preset-row">
+      <button class="chip" data-preset="all">Toutes les données</button>
+      <button class="chip" data-preset="30">30 derniers jours</button>
+      <button class="chip" data-preset="90">3 derniers mois</button>
+      <button class="chip" data-preset="year">12 derniers mois</button>
+      <span class="semester-group">
+        <button class="chip chip-icon" id="sem-prev" title="Semestre précédent">◀</button>
+        <button class="chip" id="btn-semester" data-preset="semester">Semestre…</button>
+        <button class="chip chip-icon" id="sem-next" title="Semestre suivant">▶</button>
+      </span>
+      <div class="spacer"></div>
+      <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-dim); margin:0;">
+        <input type="checkbox" id="f-exclude-orphans"> Ignorer les lignes non reliées à un étudiant
+      </label>
+      <button class="btn btn-ghost btn-sm" id="btn-reset-filters">Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- ============================ Indicateurs ============================ -->
+  <div class="kpi-grid" id="kpis" style="margin-bottom:20px;"></div>
+
+  <!-- ============================ Chronologie ============================ -->
+  <div class="card card-pad" style="margin-bottom:20px;">
+    <div class="hstack" style="flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+      <div class="section-title" style="margin:0;">📈 Évolution dans le temps</div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="btn-export-time">Exporter CSV</button>
+    </div>
+    <div class="explorer-controls" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Indicateur</label>
+        <select id="t-metric"></select>
+      </div>
+      <div class="field">
+        <label>Granularité</label>
+        <select id="t-granularity">
+          <option value="date">Par jour</option>
+          <option value="semaine">Par semaine</option>
+          <option value="mois" selected>Par mois</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Comparer par</label>
+        <select id="t-split"></select>
+      </div>
+      <div class="field">
+        <label>Type</label>
+        <div class="chart-type-row" id="t-types">
+          <button class="chart-type-btn active" data-type="line">Courbe</button>
+          <button class="chart-type-btn" data-type="area">Aire</button>
+          <button class="chart-type-btn" data-type="bar-grouped">Barres</button>
+          <button class="chart-type-btn" data-type="bar-stacked">Empilé</button>
+        </div>
+      </div>
+    </div>
+    <div id="chart-timeline"></div>
+  </div>
+
+  <!-- ========================= Explorateur croisé ========================= -->
+  <div class="card card-pad" style="margin-bottom:20px;">
+    <div class="hstack" style="flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+      <div class="section-title" style="margin:0;">🧭 Explorateur — croiser les variables</div>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="btn-export-explorer">Exporter CSV</button>
+    </div>
+    <p class="section-note">Choisissez un indicateur, une variable d'analyse et, si besoin, une seconde variable pour croiser les deux.</p>
+    <div class="explorer-controls" style="margin-bottom:16px;">
+      <div class="field">
+        <label>Indicateur</label>
+        <select id="e-metric"></select>
+      </div>
+      <div class="field">
+        <label>Analyser par</label>
+        <select id="e-dimension"></select>
+      </div>
+      <div class="field">
+        <label>Croiser avec</label>
+        <select id="e-split"></select>
+      </div>
+      <div class="field">
+        <label>Trier</label>
+        <select id="e-sort">
+          <option value="value-desc">Valeur décroissante</option>
+          <option value="value-asc">Valeur croissante</option>
+          <option value="label">Ordre alphabétique</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-type-row" id="e-types" style="margin-bottom:16px;">
+      <button class="chart-type-btn active" data-type="bar-grouped">Histogramme</button>
+      <button class="chart-type-btn" data-type="hbar">Barres horizontales</button>
+      <button class="chart-type-btn" data-type="bar-stacked">Empilé</button>
+      <button class="chart-type-btn" data-type="line">Courbe</button>
+      <button class="chart-type-btn" data-type="donut">Anneau</button>
+      <button class="chart-type-btn" data-type="pie">Secteurs</button>
+      <button class="chart-type-btn" data-type="heatmap">Carte de chaleur</button>
+      <button class="chart-type-btn" data-type="table">Tableau</button>
+    </div>
+    <div id="explorer-warning"></div>
+    <div id="chart-explorer"></div>
+  </div>
+
+  <!-- ==================== Couverture du volume horaire ==================== -->
+  <div class="dashboard-grid" style="margin-bottom:20px;">
+    <div class="card card-pad">
+      <div class="hstack" style="margin-bottom:12px;">
+        <div class="section-title" style="margin:0;">⏱️ Volume horaire — planifié vs couvert</div>
+        <div class="spacer"></div>
+        <select id="c-dimension" style="max-width:150px;">
+          <option value="ecole">Par école</option>
+          <option value="niveau">Par niveau</option>
+          <option value="cours">Par cours</option>
+          <option value="classe">Par classe</option>
+        </select>
+      </div>
+      <p class="section-note">Planifié = somme des VH de la table Cours. Couvert = durée cumulée des séances réellement pointées.</p>
+      <div id="chart-couverture"></div>
+    </div>
+  </div>
+
+  <!-- ====================== Qualité des données ====================== -->
+  <div class="card card-pad" style="margin-bottom:20px;">
+    <div class="section-title">🩺 Qualité des données</div>
+    <p class="section-note">Ce qui peut fausser les chiffres ci-dessus, rendu visible plutôt que silencieux.</p>
+    <div id="quality-list"></div>
+  </div>
+</main>
+
+<div id="toast-stack"></div>
+
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>
