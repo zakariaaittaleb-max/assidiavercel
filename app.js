@@ -50,6 +50,8 @@ function requireAuth(req, res, next) {
   if (req.session && req.session.userId) return next();
   if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'Authentification requise' });
   if (req.path === '/login.html' || req.path.startsWith('/css/') || req.path.startsWith('/js/')) return next();
+  // Icônes de l'onglet : demandées par le navigateur avant toute connexion.
+  if (['/favicon.ico', '/icon.png', '/apple-touch-icon.png'].includes(req.path)) return next();
   return res.redirect('/login.html');
 }
 app.use(requireAuth);
